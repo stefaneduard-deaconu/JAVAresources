@@ -76,9 +76,44 @@ class ClassicBacktracking {
             }
         }
     }
+    public static void allCombinations(Integer setLength) { // without the second continue (#1)
+        Stack<Integer> stack = new Stack<Integer>();
+        // backtracking
+        stack.push(-1);
+        while(!stack.empty()) {
+            // next possible index:
+            if (stack.peek() < setLength - 1)
+                stack.push(stack.pop() + 1);
+            else {
+                stack.pop();
+                continue;
+            }
+            // we check if the current element is valid;
+            //   more exactly, whether the last element si the maximum (step-by-step ----> we only compare the last 2)
+            if (stack.size() == 1 || stack.peek() > stack.elementAt(stack.size() - 2)) {
+                // and if we have obtained a complete solution:
+                if (stack.size() > 0) { // so practically every time, so we could replace this with if (true), or just not write it at all
+                    // we just print it ----> this is a combination :)
+                    stack.forEach(
+                            (element) -> System.out.print(element.toString() + " ")
+                    );
+                    System.out.println();
+                    /* As you can see, we may have tried to to make an algorithm as general as
+                     *   to only change bits (like modules) of it,
+                     *   only that we didn't yet do a jot good enough out of it :)).
+                     *
+                     */
+                    if (stack.size() < setLength - 1) {
+                        stack.push(-1);
+                    }
+                }
+            }
+        }
+    }
 }
 class PlaneBacktracking {
-
+//    TODO
+//    implement a Lee's algorithm example
 }
 
 public class Main {
@@ -95,6 +130,8 @@ public class Main {
         ClassicBacktracking.permutations(3);
         System.out.println("Combinations:");
         ClassicBacktracking.combinations(5, 3);
+        System.out.println("All combinations:");
+        ClassicBacktracking.allCombinations(5);
         //
 //        System.out.println("Input Matrix for Lee:");
 //        PlaneBacktracking.fill(5, 3);
