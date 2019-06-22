@@ -1,7 +1,6 @@
 
-import java.util.Collections;
-import java.util.Scanner;
-import java.util.Stack;
+import java.util.*;
+import java.util.stream.Stream;
 
 // ?? surprise ??
 //interface BacktrackingAlgorithm {
@@ -9,12 +8,40 @@ import java.util.Stack;
 //}
 //interface BacktrackingEngine {
 //
-//    public static isValid()
+//    public static isValid();
 //}
 
 class ClassicBacktracking {
+    public static void cartesian(Integer setLength, Integer power) {
+        Stack<Integer> stack = new Stack<>();
+        // backtracking
+        // we'll use the set {0, 1, 2, 3, ..., setLength - 1}
+        stack.push(-1);
+        while(!stack.empty()) {
+            // next possible index:
+            if (stack.peek() < setLength - 1)
+                stack.push(stack.pop() + 1);
+            else {
+                stack.pop();
+                continue;
+            }
+            //
+            if (true) { // every item is valid
+                // if we have obtained a complete solution:
+                if (stack.size() == power) {
+                    stack.forEach(
+                            (element) -> System.out.print(element.toString() + " ")
+                    );
+                    System.out.println();
+                }
+                else {
+                    stack.push(-1);
+                }
+            }
+        }
+    }
     public static void arrangements(Integer setLength, Integer subsetLength) {
-        Stack<Integer> stack = new Stack<Integer>();
+        Stack<Integer> stack = new Stack<>();
         // backtracking
         stack.push(-1);
         while(!stack.empty()) {
@@ -25,12 +52,8 @@ class ClassicBacktracking {
                 stack.pop();
                 continue;
             }
-            // we check if the current element already is in the stack:
-            if (stack.indexOf(stack.peek()) != stack.size() - 1) {
-                // and if it is, we continue as to set the next element
-                continue; // (#1)
-            }
-            else {
+            // we check if the current element is valid (it's the one and single apparition of this value inside the stack):
+            if (stack.indexOf(stack.peek()) == stack.size() - 1) {
                 // if we have obtained a complete solution:
                 if (stack.size() == subsetLength) {
                     stack.forEach(
@@ -44,6 +67,12 @@ class ClassicBacktracking {
             }
         }
     }
+    /*
+        sum
+     */
+    /*
+        number with  neighbour having1 parity different
+     */
     public static void permutations(Integer setLength) {
         arrangements(setLength, setLength);
     }
@@ -114,6 +143,60 @@ class ClassicBacktracking {
 class PlaneBacktracking {
 //    TODO
 //    implement a Lee's algorithm example
+    static private class Coord {
+        public Coord(Integer x, Integer y, Integer time) {
+            this.row = x;
+            this.column = y;
+            this.time = time;
+        }
+        private Integer row, column, time;
+
+        public Integer getRow() {
+            return row;
+        }
+        public Integer getColumn() {
+            return column;
+        }
+        public Integer getTime() {
+            return time;
+        }
+    }
+    // no obstacles in our way, just declaring a matrix (each element is -1), and we see what is the fastest way to get
+    //   from the starting points to any other point on the matrix
+    private static Boolean insideMatrix(Integer matrixHeight, Integer matrixWidth, Integer x, Integer y) {
+        return !(x < 0 || x >= matrixHeight || y < 0 || y >= matrixWidth);
+    }
+    public static Integer[][] leePattern(Integer numRows, Integer numColumns, Integer[][] startingPoints) {
+        Integer [][] matrix = new Integer[numRows][numColumns];
+        for (Integer i = 0; i < matrix.length; i++)
+            for (Integer j = 0; j < matrix[i].length; j++)
+                matrix[i][j] = -1;
+        Queue<Coord> queue = new LinkedList<>();
+        ///
+        Stream.of(startingPoints).forEach(
+                (array) -> queue.offer(new Coord(array[0], array[1], 0))
+        );
+        //
+        Integer[][] nextPosition = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+        Coord currentItem;
+        //
+        //
+        while (!queue.isEmpty()) {
+            currentItem = queue.poll();
+            matrix[currentItem.getRow()][currentItem.getColumn()] = currentItem.getTime();
+            // introducing the next elements:
+            for (Integer[] position : nextPosition) {
+                Integer nextRow = currentItem.getRow() + position[0];
+                Integer nextCol = currentItem.getColumn() + position[1];
+//                if (insideMatrix(numRows, numColumns, nextRow, nextCol))
+//                    System.out.print(nextRow + " " + nextCol + ", ");
+                if (insideMatrix(numRows, numColumns, nextRow, nextCol) &&
+                        (matrix[nextRow][nextCol] == -1 || matrix[nextRow][nextCol] > currentItem.getTime() + 1)) // (*)
+                    queue.offer(new Coord(nextRow, nextCol,  currentItem.getTime() + 1));
+            }
+        }
+        return matrix;
+    }
 }
 
 public class Main {
@@ -132,10 +215,47 @@ public class Main {
         ClassicBacktracking.combinations(5, 3);
         System.out.println("All combinations:");
         ClassicBacktracking.allCombinations(5);
-        //
-//        System.out.println("Input Matrix for Lee:");
-//        PlaneBacktracking.fill(5, 3);
-//        System.out.println("Output Matrix:");
-//        PlaneBacktracking.fill(5, 3);
+//        // leePattern:
+        Integer[][] pattern = {{0, 0}, {0, 4}, {4, 0}, {4, 4}};
+        System.out.println("Input coordonates for Lee: ");
+        Stream.of(pattern).forEach(
+                (array) -> System.out.print(array[0] + " " + array[1] + "; ")
+        );
+        Integer [][] leePattern = PlaneBacktracking.leePattern(5, 5, pattern);
+        System.out.println("Output Matrix:");
+        Stream.of(leePattern).forEach(
+                (patternRow) -> {
+                    Stream.of(patternRow).forEach(
+                            (item) -> System.out.print(item + " ")
+                    );
+                    System.out.println();
+                }
+        );
+//         now we create a second pattern:
+        Integer [][] pattern2 = {{2, 2}, {17, 17}, {9, 9}, {10, 10}, {2, 13}, {5, 16}, {17, 6}, {14, 3}};
+        System.out.println("Input coordonates for Lee: ");
+        Stream.of(pattern2).forEach(
+                (array) -> System.out.print(array[0] + " " + array[1] + "; ")
+        );
+        System.out.println();
+        leePattern = PlaneBacktracking.leePattern(20, 20, pattern2);
+        System.out.println("Output Matrix:");
+        Stream.of(leePattern).forEach(
+                (patternRow) -> {
+                    Stream.of(patternRow).forEach(
+                            (item) -> System.out.printf("%3d", item)
+                            // comments the lambda below and uncomment the one above to get
+                            //   a non-fancy ( :) ) representation of the pattern
+//                            (item) -> {
+//                                if (item == 0) System.out.print("  ");
+//                                else if (item % 4 < 2)
+//                                    System.out.print("▒"); // ░
+//                                else
+//                                    System.out.print("▓");
+//                            }
+                    );
+                    System.out.println();
+                }
+        );
     }
 }
