@@ -1,6 +1,11 @@
+<<<<<<< HEAD
+# for intelliJ
+.idea
+=======
 # working with intelliJ
 .idea
 JAVAresources.iml
+>>>>>>> a1a16bdb5c4c292b3afe70a031332015ba2f67c7
 
 # Compiled class file
 *.class
